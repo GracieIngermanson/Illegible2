@@ -1,0 +1,86 @@
+body {
+  font-family: sans-serif;
+  background: rgb(51, 0, 51, 0.2);
+}
+
+img {
+  max-width: 200;
+}
+
+.app-name {
+  font-family: fantasy;
+  font-size: 7em;
+  text-align: center;
+  background-image: linear-gradient(45deg, #330033, white);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+}
+
+#box h1 {
+  text-align: center;
+  font-family: fantasy;
+  padding-bottom: 1em;
+}
+
+#chart {
+  padding-top: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.gradient {
+  background-image: linear-gradient(45deg, #330033, white);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+}
+
+.hide-text {
+  font-size: 0;
+}
+
+.blank-box {
+  color: transparent;
+  border-style: solid;
+  border: 2px solid black;
+}
+
+.word-bank-box {
+  font-weight: bold;
+  padding-top: 0;
+  padding-bottom: 3em;
+}
+
+.word-bank {
+  border: 2px solid black;
+  word-spacing: 1rem;
+  text-justify: center;
+  padding: 1em;
+}
+
+.highlight {
+  background-color: rgb(57, 208, 49);
+}
+
+a {
+  text-decoration: none;
+}
+
+label {
+  display: block;
+}
+
+nav a {
+  display: inline-block;
+  margin: 1em;
+}
+
+form div {
+  margin: 1em;
+  display: inline-block;
+}

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width initial-scale=1.0" />
+    <title>iLlEgIbLe</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <h1 class="app-name">iLlEgIbLe</h1>
+    </div>
+
+    <div id="button-bar">
+      <select id="stories">
+        <option value="" selected>Stories</option>
+        <option value="/brownbear.html">The Brown Bear of Norway</option>
+        <option value="/cinderella.html">
+          Cinderella or the Little Glass Slipper
+        </option>
+        <option value="/kasyananddreammaiden.html">
+          Kasyan and the Dream Maiden
+        </option>
+      </select>
+      <select id="settings">
+        <option value="" selected>Viewing options</option>
+        <option value="fadeParagraphs">Vanishing</option>
+        <option value="repeatingGradient">Random gradient</option>
+        <option value="toggleableCat">Click and replace</option>
+        <option value="shuffleParagraphs">Shuffle</option>
+        <option value="shuffleWords">Scramble</option>
+        <option value="toggleWords">Hide words</option>
+        <option value="flashcard">Flash cards</option>
+        <option value="flashcardWithHints">Flash cards/word bank</option>
+        <option value="highlightWordsWithCounts">
+          Highlighted word counts
+        </option>
+      </select>
+      <select id="delay">
+        <option value="" selected>Set time delay</option>
+        <option value="1000">1 second</option>
+        <option value="5000">5 seconds</option>
+        <option value="10000">10 seconds</option>
+        <option value="30000">30 seconds</option>
+      </select>
+      <button id="start-reading" type="submit">Start Reading!</button>
+    </div>
+    <div id="chart-box"><div id="chart"></div></div>
+    <div id="box"></div>
+
+    <script>
+      let NUM_RELOADS = 0;
+      const viewOptions = {
+        '': () => {},
+        fadeParagraphs,
+        repeatingGradient,
+        toggleableCat,
+        shuffleParagraphs,
+        shuffleWords,
+        toggleWords,
+        flashcard,
+        flashcardWithHints,
+        highlightWordsWithCounts,
+      };
+      const delays = {
+        '': 0,
+        1000: 1000,
+        5000: 5000,
+        10000: 10000,
+        30000: 30000,
+      };
+
+      d3.select('#start-reading').on('click', function () {
+        let story, callback, delay;
+        d3.select('#stories').each(function () {
+          story = this.value || '/brownbear.html';
+        });
+        d3.select('#settings').each(function () {
+          callback = viewOptions[this.value];
+        });
+        d3.select('#delay').each(function () {
+          delay = delays[this.value];
+        });
+        loadWithCallback(story, callback, delay);
+      });
+
+      async function loadWithCallback(url, callback, delay = 0) {
+        NUM_RELOADS++;
+        await $('#box').load(url, function () {
+          d3.select('#box')
+            .transition()
+            .delay(delay)
+            .on('end', function () {
+              callback(NUM_RELOADS);
+            });
+          console.log('leaving loadText callback');
+        });
+      }
+      /*
+      d3.select('#button-bar')
+        .append('button')
+        .attr('id', 'fadeParagraphs')
+        .text('Fade Paragraphs'); */
+
+      async function fadeParagraphs(numReloads) {
+        d3.select('#box')
+          .selectAll('p')
+          .on('click', function () {
+            d3.select(this).style('opacity', '1');
+          })
+          .transition()
+          .duration(1000)
+          .delay(function (d, i) {
+            return i * 750;
+          })
+          .style('opacity', '0');
+      }
+
+      // loadWithCallback('/kasyananddreammaiden.html', shuffleParagraphs, 10000);
+
+      function catOnDemand(numReloads) {
+        d3.select('#box')
+          .selectAll('p')
+          .on('click', function () {
+            d3.select(this).html('<img src="/frieda.jpg"/>');
+          });
+      }
+
+      function toggleableCat(numReloads) {
+        d3.select('#box')
+          .selectAll('p')
+          .each(function () {
+            d3.select(this).append('div').attr('class', 'cat-box');
+          })
+          .on('click', function () {
+            if (!this.classList.contains('hide-text')) {
+              d3.select(this)
+                .select('.cat-box')
+                .html('<img src="/frieda.jpg" />');
+            } else {
+              d3.select(this).select('.cat-box').html('');
+            }
+            this.classList.toggle('hide-text');
+          });
+      }
+      // Shuffle words in each paragraph, and change the font to Comic Sans MS
+      function shuffleWords(numReloads) {
+        if (numReloads === NUM_RELOADS) {
+          d3.select('#box')
+            .selectAll('p')
+            .transition()
+            .duration(1000)
+            .delay(function (d, i) {
+              return (i + 1) * 1000;
+            })
+            .each(function () {
+              if (numReloads === NUM_RELOADS) {
+                d3.select(this)
+                  .text(function () {
+                    let innerText = this.innerText;
+                    return d3.shuffle(innerText.split(' ')).join(' ');
+                  })
+                  .style('font-family', 'Comic Sans MS');
+              } // end if
+            })
+            .on('end', () => shuffleWords(numReloads));
+        } // end if
+      } // end shuffleWords
+      // Once every second, color paragraphs in gradient with probability 0.25
+      function repeatingGradient(numReloads) {
+        if (numReloads === NUM_RELOADS) {
+          d3.select('#box')
+            .selectAll('p')
+            .transition()
+            .delay(1000)
+            .each(function () {
+              if (numReloads === NUM_RELOADS) {
+                d3.select(this).attr('class', function () {
+                  return Math.random() < 0.25 ? 'gradient' : '';
+                });
+              } // end if
+            })
+            .on('end', () => repeatingGradient(numReloads));
+        } // endIf
+      }
+      //repeatingGradient();
+
+      function shuffleParagraphs(numReloads) {
+        if (numReloads === NUM_RELOADS) {
+          let paragraphSelection = d3.select('#box').selectAll('p');
+          console.log(paragraphSelection);
+          const paragraphs = new Array(paragraphSelection.length);
+          paragraphSelection.each(function (d, i) {
+            paragraphs[i] = this.innerText;
+          });
+          d3.shuffle(paragraphs);
+          paragraphSelection
+            .each(function (d, i) {
+              d3.select(this).text(paragraphs[i]);
+            })
+            .transition()
+            .delay(1000)
+            .on('end', () => shuffleParagraphs(numReloads));
+        }
+      }
+
+      function toggleWords(numReloads) {
+        d3.select('#box')
+          .selectAll('p')
+          .each(function () {
+            this.innerHTML = this.innerText
+              .split(' ')
+              .map((word) => `<span>${word}</span>`)
+              .join(' ');
+            d3.select(this)
+              .selectAll('span')
+              .on('click', function () {
+                this.classList.toggle('blank-box');
+              });
+          });
+      }
+
+      function flashcard(numReloads) {
+        d3.select('#box')
+          .selectAll('p')
+          .each(function () {
+            this.innerHTML = this.innerText
+              .split(' ')
+              .map((word) => `<span>${word}</span>`)
+              .join(' ');
+            d3.select(this)
+              .selectAll('span')
+              .each(function (d, i) {
+                if (Math.random() < 0.1) {
+                  this.classList.toggle('blank-box');
+                }
+              })
+              .on('click', function () {
+                this.classList.toggle('blank-box');
+              });
+          });
+      }
+      function flashcardWithHints(numReloads) {
+        d3.select('#box')
+          .selectAll('p')
+          .each(function () {
+            let words = this.innerText.split(' ');
+            this.innerHTML = words
+              .map((word) => `<span>${word}</span>`)
+              .join(' ');
+            d3.select(this)
+              .selectAll('span')
+              .each(function (d, i) {
+                if (Math.random() < 0.1) {
+                  this.classList.toggle('blank-box');
+                } else {
+                  words[i] = '';
+                }
+              })
+              .on('click', function () {
+                this.classList.toggle('blank-box');
+              });
+            d3.select(this)
+              .append('div')
+              .html('<div><h3>Word bank:</h3> </div>')
+              .attr('class', 'word-bank-box')
+              .append('div')
+              .attr('class', 'word-bank blank-box')
+              .text(d3.shuffle(words.filter((word) => !!word)).join(' '))
+              .on('click', function () {
+                this.classList.toggle('blank-box');
+              });
+          });
+      }
+
+      function preprocessWordsAndCounts() {
+        // Wrap each non-title word in a span tag (getting rid of any preexisting formatting in the paragraphs)
+        d3.select('#box')
+          .selectAll('p')
+          .each(function () {
+            let words = this.innerText.split(' ');
+            this.innerHTML = words
+              .map((word) => `<span>${word}</span>`)
+              .join(' ');
+          });
+        // Store word counts in an array
+        const spans = d3.select('#box').selectAll('span');
+        const wordLengths = new Array(spans._groups[0].length);
+        spans.each(function (d, i) {
+          wordLengths[i] = this.innerText.length;
+        });
+        let returnValue = {
+          wordLengths,
+          max: wordLengths.reduce((max, val) => Math.max(max, val)),
+        };
+        console.log('Done preprocessing');
+        return returnValue;
+      }
+
+      // Credit: https://vegibit.com/create-a-bar-chart-with-d3-javascript/
+      function initializeBarChart(height, width, barWidth, barOffset, data) {
+        d3.select('#chart')
+          .select('svg')
+          .html('')
+          .attr('width', width)
+          .attr('height', height)
+          .selectAll('rect')
+          .data(data)
+          .enter()
+          .append('rect')
+          .style('fill', '#330033')
+          .style('stroke', 'rgb(51, 0, 51, 0.2)')
+          .style('stroke-width', '5')
+          .attr('width', barWidth)
+          .attr('height', function (data) {
+            return data;
+          })
+          .attr('x', function (data, i) {
+            return i * (barWidth + barOffset);
+          });
+      }
+
+      function highlightWordsWithCounts(numReloads) {
+        // Wrap words in
+        let {wordLengths, max} = preprocessWordsAndCounts();
+        let classData = new Array(wordLengths.length);
+
+        let height = 200,
+          width = 40 * max - 10,
+          barWidth = 30,
+          barOffset = 10;
+        let chartBox = d3.select('#chart');
+        chartBox
+          .append('div')
+          .append('h3')
+          .text('Number of highlighted words by length');
+        d3.select('#chart').append('div').append('svg');
+
+        highlightLoop(numReloads);
+        function highlightLoop(numReloads) {
+          if (numReloads !== NUM_RELOADS) {
+            d3.select('#chart').html('');
+          } else {
+            d3.select('#box')
+              .selectAll('span')
+              .each(function (d, i) {
+                d3.select(this).attr('class', function () {
+                  let className = Math.random() < 0.2 ? 'highlight' : '';
+                  classData[i] = className ? 1 : 0;
+                  return className;
+                });
+              });
+            // Create array of 0s for highlighted word counts by length
+            let countData = [];
+            for (let i = 0; i < max; i++) {
+              countData.push(0);
+            }
+            classData.reduce((counts, val, i) => {
+              // add 0 (unhighlighted) or 1 (highlighted) to count for the appropriate word length
+              counts[wordLengths[i] - 1] += val;
+              return counts;
+            }, countData);
+            d3.select('#chart')
+              .each(() =>
+                initializeBarChart(
+                  height,
+                  width,
+                  barWidth,
+                  barOffset,
+                  countData
+                )
+              )
+              .transition()
+              .delay(2000)
+              .on('end', () => highlightLoop(numReloads));
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
