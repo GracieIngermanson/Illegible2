@@ -105,7 +105,7 @@
         .attr('id', 'fadeParagraphs')
         .text('Fade Paragraphs'); */
 
-      async function fadeParagraphs(numReloads) {
+      function fadeParagraphs() {
         d3.select('#box')
           .selectAll('p')
           .on('click', function () {
@@ -118,8 +118,6 @@
           })
           .style('opacity', '0');
       }
-
-      // loadWithCallback('/kasyananddreammaiden.html', shuffleParagraphs, 10000);
 
       function catOnDemand(numReloads) {
         d3.select('#box')
