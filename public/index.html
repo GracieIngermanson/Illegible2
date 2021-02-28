@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/style.css" />
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/index.js"></script>
   </head>
 
   <body>
@@ -38,6 +40,9 @@
         <option value="highlightWordsWithCounts">
           Highlighted word counts
         </option>
+        <option value="interactiveHighlightOnClick">
+          Interactive highlight on click
+        </option>
       </select>
       <select id="delay">
         <option value="" selected>Set time delay</option>
@@ -64,6 +69,7 @@
         flashcard,
         flashcardWithHints,
         highlightWordsWithCounts,
+        interactiveHighlightOnClick,
       };
       const delays = {
         '': 0,
@@ -94,7 +100,7 @@
             .transition()
             .delay(delay)
             .on('end', function () {
-              callback(NUM_RELOADS);
+              callback(NUM_RELOADS, url);
             });
           console.log('leaving loadText callback');
         });
@@ -105,7 +111,7 @@
         .attr('id', 'fadeParagraphs')
         .text('Fade Paragraphs'); */
 
-      async function fadeParagraphs(numReloads) {
+      function fadeParagraphs() {
         d3.select('#box')
           .selectAll('p')
           .on('click', function () {
@@ -118,8 +124,6 @@
           })
           .style('opacity', '0');
       }
-
-      // loadWithCallback('/kasyananddreammaiden.html', shuffleParagraphs, 10000);
 
       function catOnDemand(numReloads) {
         d3.select('#box')
@@ -378,6 +382,22 @@
               .on('end', () => highlightLoop(numReloads));
           }
         }
+      }
+
+      // On click, toggle a highlight and make visible to all viewers of the page
+      function interactiveHighlightOnClick(numReloads, url) {
+        emitViewStoryHighlights(url);
+        d3.select('#box')
+          .selectAll('p')
+          .each(function (d, paragraphIndex) {
+            this.innerHTML = this.innerText
+              .split(' ')
+              .map(
+                (word, wordIndex) =>
+                  `<span id='paragraph${paragraphIndex}word${wordIndex}' onclick='emitSendHighlight("paragraph${paragraphIndex}word${wordIndex}")'>${word}</span>`
+              )
+              .join(' ');
+          });
       }
     </script>
   </body>
