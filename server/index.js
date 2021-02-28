@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const socketio = require('socket.io');
 const PORT = process.env.PORT || 8080;
 const app = express();
 module.exports = app;
@@ -45,6 +46,8 @@ const startListening = () => {
   const server = app.listen(PORT, () =>
     console.log(`Mixing it up on port ${PORT}`)
   );
+  const serverIO = socketio(server);
+  require('./socket')(serverIO);
 };
 
 async function bootApp() {
