@@ -100,7 +100,7 @@
             .transition()
             .delay(delay)
             .on('end', function () {
-              callback(NUM_RELOADS);
+              callback(NUM_RELOADS, url);
             });
           console.log('leaving loadText callback');
         });
@@ -385,7 +385,8 @@
       }
 
       // On click, toggle a highlight and make visible to all viewers of the page
-      function interactiveHighlightOnClick(numReloads) {
+      function interactiveHighlightOnClick(numReloads, url) {
+        emitViewStoryHighlights(url);
         d3.select('#box')
           .selectAll('p')
           .each(function (d, paragraphIndex) {
