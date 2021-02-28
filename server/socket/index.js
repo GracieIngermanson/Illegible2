@@ -1,5 +1,8 @@
 module.exports = (serverIO) => {
-  serverIO.on('connection', (socket) =>
-    console.log('New connection from socket', socket.id)
-  );
+  serverIO.on('connection', (socket) => {
+    socket.join('allViewers');
+    socket.on('sendHighlight', (elementId) =>
+      serverIO.in('allViewers').emit('displayHighlight', elementId)
+    );
+  });
 };
